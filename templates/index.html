@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit Recognition</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; margin: 0; background: #f0f2f5;
+        }
+        .container {
+            background: white; padding: 2rem; border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;
+            max-width: 600px; width: 100%;
+        }
+        h1 { color: #1a1a2e; margin-bottom: 0.5rem; }
+        .canvas-wrapper {
+            display: flex; justify-content: center; margin: 1.5rem 0;
+        }
+        canvas {
+            border: 3px solid #333; border-radius: 8px;
+            cursor: crosshair; background: black;
+        }
+        .controls { margin: 1rem 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        button {
+            padding: 10px 24px; border: none; border-radius: 8px;
+            font-size: 1rem; cursor: pointer; transition: all 0.2s;
+            font-weight: 600;
+        }
+        #predict-btn { background: #4a90d9; color: white; }
+        #predict-btn:hover { background: #357abd; transform: translateY(-1px); }
+        #clear-btn { background: #e74c3c; color: white; }
+        #clear-btn:hover { background: #c0392b; transform: translateY(-1px); }
+        #predict-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .result {
+            margin-top: 1.5rem; padding: 1rem; border-radius: 8px;
+            background: #f8f9fa; min-height: 80px;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column;
+        }
+        .digit { font-size: 3rem; font-weight: bold; color: #2c3e50; }
+        .confidence { font-size: 1.1rem; color: #7f8c8d; }
+        .prob-bar-bg { width: 100%; max-width: 400px; height: 20px; background: #ecf0f1; border-radius: 10px; margin-top: 0.5rem; overflow: hidden; }
+        .prob-bar-fill { height: 100%; background: linear-gradient(90deg, #4a90d9, #2ecc71); border-radius: 10px; transition: width 0.3s ease; }
+        .error { color: #e74c3c; font-weight: bold; }
+        .probabilities { margin-top: 1rem; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .prob-row { display: flex; align-items: center; margin: 3px 0; font-size: 0.85rem; }
+        .prob-label { width: 30px; font-weight: bold; text-align: right; margin-right: 8px; }
+        .prob-bar-sm { flex: 1; height: 16px; background: #ecf0f1; border-radius: 6px; overflow: hidden; }
+        .prob-bar-sm-fill { height: 100%; background: #4a90d9; border-radius: 6px; transition: width 0.2s ease; }
+        .prob-value { width: 50px; text-align: right; margin-left: 8px; font-size: 0.8rem; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Handwritten Digit Recognition</h1>
+        <p>Draw a digit (0-9) in the canvas below</p>
+        <div class="canvas-wrapper">
+            <canvas id="canvas" width="280" height="280"></canvas>
+        </div>
+        <div class="controls">
+            <button id="predict-btn">Predict</button>
+            <button id="clear-btn">Clear</button>
+        </div>
+        <div class="result" id="result">
+            <p style="color: #95a5a6;">Draw a digit and click Predict</p>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const predictBtn = document.getElementById('predict-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const resultDiv = document.getElementById('result');
+        let isDrawing = false;
+
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'white';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 18;
+
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; draw(e); });
+        canvas.addEventListener('mousemove', (e) => { if (isDrawing) draw(e); });
+        canvas.addEventListener('mouseup', () => { isDrawing = false; ctx.beginPath(); });
+        canvas.addEventListener('mouseleave', () => { isDrawing = false; ctx.beginPath(); });
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; drawTouch(e); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (isDrawing) drawTouch(e); });
+        canvas.addEventListener('touchend', (e) => { e.preventDefault(); isDrawing = false; ctx.beginPath(); });
+
+        function draw(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        function drawTouch(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (touch.clientY - rect.top) * (canvas.height / rect.height);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        clearBtn.addEventListener('click', () => {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            resultDiv.innerHTML = '<p style="color: #95a5a6;">Draw a digit and click Predict</p>';
+        });
+
+        predictBtn.addEventListener('click', async () => {
+            predictBtn.disabled = true;
+            predictBtn.textContent = 'Predicting...';
+            resultDiv.innerHTML = '<p>Processing...</p>';
+            try {
+                const dataUrl = canvas.toDataURL('image/png');
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataUrl })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                } else {
+                    let probHtml = '<div class="probabilities">';
+                    for (let i = 0; i < data.probabilities.length; i++) {
+                        const pct = (data.probabilities[i] * 100).toFixed(1);
+                        probHtml += `
+                            <div class="prob-row">
+                                <span class="prob-label">${i}</span>
+                                <div class="prob-bar-sm">
+                                    <div class="prob-bar-sm-fill" style="width: ${pct}%"></div>
+                                </div>
+                                <span class="prob-value">${pct}%</span>
+                            </div>`;
+                    }
+                    probHtml += '</div>';
+                    resultDiv.innerHTML = `
+                        <div class="digit">${data.prediction}</div>
+                        <div class="confidence">Confidence: ${(data.confidence * 100).toFixed(2)}%</div>
+                        <div class="prob-bar-bg">
+                            <div class="prob-bar-fill" style="width: ${data.confidence * 100}%"></div>
+                        </div>
+                        ${probHtml}
+                    `;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+            }
+            predictBtn.disabled = false;
+            predictBtn.textContent = 'Predict';
+        });
+    </script>
+</body>
+</html>
