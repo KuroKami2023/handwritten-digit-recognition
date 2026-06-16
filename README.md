@@ -8,6 +8,12 @@
 
 > A Convolutional Neural Network (CNN) that recognizes handwritten digits (0–9) from the MNIST dataset with 99.4%+ test accuracy, featuring an interactive web drawing interface.
 
+---
+
+> 💡 **Portfolio demo:** A simplified browser-based version is available in the [portfolio website](https://kurokami2023.github.io).
+
+---
+
 ## Features
 
 - [x] **Deep CNN Architecture** — 3 convolutional blocks (32→64→128 filters) with Batch Normalization and Dropout
