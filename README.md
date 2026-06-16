@@ -1,10 +1,10 @@
 # Handwritten Digit Recognition
 
-[![Status](https://img.shields.io/badge/status-complete-brightgreen)](https://github.com/KuroKami2023/handwritten-digit-recognition)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.8%2B-orange)](https://www.tensorflow.org/)
-[![Accuracy](https://img.shields.io/badge/accuracy-99.4%25-success)]()
+[](https://github.com/KuroKami2023/handwritten-digit-recognition)
+[](LICENSE)
+[](https://www.python.org/)
+[](https://www.tensorflow.org/)
+[]()
 
 > A Convolutional Neural Network (CNN) that recognizes handwritten digits (0–9) from the MNIST dataset with 99.4%+ test accuracy, featuring an interactive web drawing interface.
 
@@ -66,18 +66,7 @@ Input (28 × 28 × 1)
 | Parameters | ~1.2M |
 | Training Time | ~5 min (CPU) / ~30s (GPU) |
 
-## Screenshots / Plots
-
-| Plot | Location |
-|------|----------|
-| Training History | `results/training_history.png` |
-| Confusion Matrix | `results/confusion_matrix.png` |
-| Per-Class Accuracy | `results/class_accuracies.png` |
-| Misclassification Samples | `results/misclassifications.png` |
-| Sample Predictions | `results/sample_predictions.png` |
-| Web App Demo | Screenshot placeholder |
-
-## Tech Stack
+# Tech Stack
 
 - **Python** — Core language
 - **TensorFlow / Keras** — Deep learning framework
